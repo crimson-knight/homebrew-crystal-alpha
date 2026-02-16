@@ -1,9 +1,9 @@
 class CrystalAlpha < Formula
   desc "Crystal compiler with incremental compilation (alpha)"
   homepage "https://crystal-lang.org"
-  url "file:///Users/crimsonknight/open_source_coding_projects/crystal/.build/crystal"
+  url "file:///tmp/crystal-alpha-1.20.0-dev.tar.gz"
   version "1.20.0-dev-incremental"
-  sha256 :no_check
+  sha256 "1823e685f60f7b90691f50da3cc960ecccca2238ae9dcccd8276049b65bc2edc"
 
   depends_on "bdw-gc"
   depends_on "gmp"
@@ -17,10 +17,8 @@ class CrystalAlpha < Formula
   uses_from_macos "libffi"
 
   def install
-    source_root = Pathname.new("/Users/crimsonknight/open_source_coding_projects/crystal")
-
     # Install the pre-built binary
-    bin.install source_root/".build/crystal" => "crystal-alpha-bin"
+    bin.install ".build/crystal" => "crystal-alpha-bin"
 
     # Create wrapper script
     (bin/"crystal-alpha").write <<~SH
@@ -34,25 +32,24 @@ class CrystalAlpha < Formula
     chmod 0755, bin/"crystal-alpha"
 
     # Install stdlib source
-    pkgshare.install source_root/"src"
+    pkgshare.install "src"
 
     # Install shell completions (renamed for crystal-alpha command)
     # Bash completion
-    bash_comp = source_root/"etc/completion.bash"
-    bash_content = bash_comp.read.gsub("complete -o default -F _crystal crystal",
-                                       "complete -o default -F _crystal crystal-alpha")
+    bash_content = (buildpath/"etc/completion.bash").read
+      .gsub("complete -o default -F _crystal crystal",
+            "complete -o default -F _crystal crystal-alpha")
     (bash_completion/"crystal-alpha").write bash_content
 
     # Zsh completion
-    zsh_comp = source_root/"etc/completion.zsh"
-    zsh_content = zsh_comp.read
+    zsh_content = (buildpath/"etc/completion.zsh").read
       .sub("#compdef crystal", "#compdef crystal-alpha")
       .sub("compdef _crystal crystal", "compdef _crystal crystal-alpha")
     (zsh_completion/"_crystal-alpha").write zsh_content
 
     # Fish completion
-    fish_comp = source_root/"etc/completion.fish"
-    fish_content = fish_comp.read.gsub("complete -c crystal", "complete -c crystal-alpha")
+    fish_content = (buildpath/"etc/completion.fish").read
+      .gsub("complete -c crystal", "complete -c crystal-alpha")
     (fish_completion/"crystal-alpha.fish").write fish_content
   end
 
