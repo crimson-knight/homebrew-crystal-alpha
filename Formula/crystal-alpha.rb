@@ -1,6 +1,6 @@
 class CrystalAlpha < Formula
-  desc "Crystal compiler with incremental compilation (alpha)"
-  homepage "https://crystal-lang.org"
+  desc "Crystal compiler with incremental compilation and WASM support (alpha)"
+  homepage "https://github.com/crimson-knight/crystal/tree/incremental-compilation"
   url "https://github.com/crimson-knight/crystal/releases/download/v1.20.0-dev-incremental-2/crystal-alpha-1.20.0-dev-incremental.tar.gz"
   version "1.20.0-dev-incremental-2"
   sha256 "39455284c519a08a384f2c5236d690f0b95994f1f3b43fa16a1282fe23d9b6c8"
@@ -20,13 +20,18 @@ class CrystalAlpha < Formula
     # Install the pre-built binary
     bin.install ".build/crystal" => "crystal-alpha-bin"
 
-    # Create wrapper script
+    # Create lib/crystal directory so the default CRYSTAL_LIBRARY_PATH
+    # ($ORIGIN/../lib/crystal) resolves without linker warnings.
+    (lib/"crystal").mkpath
+
+    # Create wrapper script that sets CRYSTAL_PATH and CRYSTAL_LIBRARY_PATH.
+    # CRYSTAL_LIBRARY_PATH defaults to our lib/crystal dir, suppressing the
+    # "search path not found" linker warning. Users can override it for
+    # cross-compilation (e.g. WASM: CRYSTAL_LIBRARY_PATH=/path/to/wasm-libs).
     (bin/"crystal-alpha").write <<~SH
       #!/bin/sh
       export CRYSTAL_PATH="${CRYSTAL_PATH:-./lib:#{pkgshare}/src}"
-      if [ -n "${CRYSTAL_LIBRARY_PATH}" ]; then
-        export CRYSTAL_LIBRARY_PATH="${CRYSTAL_LIBRARY_PATH}"
-      fi
+      export CRYSTAL_LIBRARY_PATH="${CRYSTAL_LIBRARY_PATH:-#{lib}/crystal}"
       exec "#{bin}/crystal-alpha-bin" "$@"
     SH
     chmod 0755, bin/"crystal-alpha"
@@ -53,7 +58,28 @@ class CrystalAlpha < Formula
     (fish_completion/"crystal-alpha.fish").write fish_content
   end
 
+  def caveats
+    <<~EOS
+      Crystal Alpha includes incremental compilation and WASM support.
+
+      Usage:
+        crystal-alpha build hello.cr          # Native compilation
+        crystal-alpha watch hello.cr          # Watch mode (recompile on change)
+
+      For WASM compilation:
+        CRYSTAL_LIBRARY_PATH=/path/to/wasm-libs crystal-alpha build hello.cr \\
+          -o hello.wasm --target wasm32-wasi -Dwithout_iconv -Dwithout_openssl
+
+      Note: WASM requires wasi-sdk libraries, wasmtime, and wasm-opt (Binaryen).
+    EOS
+  end
+
   test do
     assert_match "Crystal", shell_output("#{bin}/crystal-alpha --version")
+
+    # Test native compilation
+    (testpath/"hello.cr").write 'puts "Hello from Crystal Alpha!"'
+    system bin/"crystal-alpha", "build", "hello.cr", "-o", "hello"
+    assert_equal "Hello from Crystal Alpha!\n", shell_output("#{testpath}/hello")
   end
 end
