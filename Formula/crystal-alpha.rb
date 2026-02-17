@@ -1,9 +1,9 @@
 class CrystalAlpha < Formula
   desc "Crystal compiler with incremental compilation (alpha)"
   homepage "https://crystal-lang.org"
-  url "file:///tmp/crystal-alpha-1.20.0-dev.tar.gz"
-  version "1.20.0-dev-incremental"
-  sha256 "1823e685f60f7b90691f50da3cc960ecccca2238ae9dcccd8276049b65bc2edc"
+  url "https://github.com/crimson-knight/crystal/releases/download/v1.20.0-dev-incremental-2/crystal-alpha-1.20.0-dev-incremental.tar.gz"
+  version "1.20.0-dev-incremental-2"
+  sha256 "39455284c519a08a384f2c5236d690f0b95994f1f3b43fa16a1282fe23d9b6c8"
 
   depends_on "bdw-gc"
   depends_on "gmp"
