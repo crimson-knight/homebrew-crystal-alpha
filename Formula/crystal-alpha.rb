@@ -1,9 +1,9 @@
 class CrystalAlpha < Formula
   desc "Crystal compiler with incremental compilation and WASM support (alpha)"
   homepage "https://github.com/crimson-knight/crystal/tree/incremental-compilation"
-  url "https://github.com/crimson-knight/crystal/releases/download/v1.20.0-dev-incremental-2/crystal-alpha-1.20.0-dev-incremental.tar.gz"
-  version "1.20.0-dev-incremental-2"
-  sha256 "39455284c519a08a384f2c5236d690f0b95994f1f3b43fa16a1282fe23d9b6c8"
+  url "https://github.com/crimson-knight/crystal/releases/download/v1.20.0-dev-incremental-3/crystal-alpha-1.20.0-dev-incremental.tar.gz"
+  version "1.20.0-dev-incremental-3"
+  sha256 "67170994411824b81330a2603896c731db204f4ad286286c960a41aca29543c1"
 
   depends_on "bdw-gc"
   depends_on "gmp"
@@ -61,10 +61,13 @@ class CrystalAlpha < Formula
   def caveats
     <<~EOS
       Crystal Alpha includes incremental compilation and WASM support.
+      Warm rebuilds are 3-5x faster than stock Crystal.
 
       Usage:
-        crystal-alpha build hello.cr          # Native compilation
-        crystal-alpha watch hello.cr          # Watch mode (recompile on change)
+        crystal-alpha build hello.cr                  # Standard build
+        crystal-alpha build hello.cr --incremental    # Incremental (3-5x warm speedup)
+        crystal-alpha build hello.cr --no-cache       # Force full rebuild
+        crystal-alpha watch hello.cr                  # Watch mode (recompile on change)
 
       For WASM compilation:
         CRYSTAL_LIBRARY_PATH=/path/to/wasm-libs crystal-alpha build hello.cr \\
